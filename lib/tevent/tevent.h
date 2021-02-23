@@ -164,6 +164,31 @@ const char **tevent_backend_list(TALLOC_CTX *mem_ctx);
  */
 void tevent_set_default_backend(const char *backend);
 
+/**
+ * @brief Set chain ID for the subsequent requests.
+ *
+ * The chain ID is inherited by all subsequent tevent requests and fd, timers
+ * and immediate events.
+ *
+ * @code
+ * uint32_t old_id; old_id = tevent_set_chain_id(10);
+ * req = my_request_send(...);
+ * tevent_set_chain_id(old_id);
+ * @endcode
+ *
+ * @param[in]  id   The new chain ID.
+ *
+ * @return          Current chain ID.
+ */
+uint32_t tevent_set_chain_id(uint32_t id);
+
+/**
+ * @brief Get current chain ID.
+ *
+ * @return          Current chain ID.
+ */
+uint32_t tevent_get_chain_id(void);
+
 #ifdef DOXYGEN
 /**
  * @brief Add a file descriptor based event.

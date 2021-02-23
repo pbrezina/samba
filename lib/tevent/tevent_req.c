@@ -103,6 +103,7 @@ struct tevent_req *_tevent_req_create(TALLOC_CTX *mem_ctx,
 	talloc_set_name_const(data, type);
 
 	req->data = data;
+	req->chain_id = tevent_chain_id;
 
 	talloc_set_destructor(req, tevent_req_destructor);
 
@@ -131,6 +132,8 @@ static int tevent_req_destructor(struct tevent_req *req)
 
 void _tevent_req_notify_callback(struct tevent_req *req, const char *location)
 {
+	uint32_t old_id;
+
 	req->internal.finish_location = location;
 	if (req->internal.defer_callback_ev) {
 		(void)tevent_req_post(req, req->internal.defer_callback_ev);
@@ -138,7 +141,9 @@ void _tevent_req_notify_callback(struct tevent_req *req, const char *location)
 		return;
 	}
 	if (req->async.fn != NULL) {
+		old_id = tevent_set_chain_id(req->chain_id);
 		req->async.fn(req);
+		tevent_set_chain_id(old_id);
 	}
 }
 

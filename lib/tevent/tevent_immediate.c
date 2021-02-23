@@ -118,6 +118,7 @@ void tevent_common_schedule_immediate(struct tevent_immediate *im,
 		.create_location	= create_location,
 		.schedule_location	= location,
 		.busy			= busy,
+		.chain_id = tevent_chain_id,
 	};
 
 	DLIST_ADD_END(ev->immediate_events, im);
@@ -134,6 +135,7 @@ int tevent_common_invoke_immediate_handler(struct tevent_immediate *im,
 	struct tevent_context *handler_ev = im->event_ctx;
 	struct tevent_context *ev = im->event_ctx;
 	struct tevent_immediate cur = *im;
+	uint32_t old_id;
 
 	if (removed != NULL) {
 		*removed = false;
@@ -163,7 +165,9 @@ int tevent_common_invoke_immediate_handler(struct tevent_immediate *im,
 					cur.handler_name,
 					cur.schedule_location);
 	}
+	old_id = tevent_set_chain_id(im->chain_id);
 	cur.handler(handler_ev, im, cur.private_data);
+	tevent_set_chain_id(old_id);
 	if (cur.wrapper != NULL) {
 		cur.wrapper->ops->after_immediate_handler(
 					cur.wrapper->wrap_ev,

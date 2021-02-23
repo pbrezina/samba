@@ -83,6 +83,7 @@ struct tevent_fd *tevent_common_add_fd(struct tevent_context *ev, TALLOC_CTX *me
 		.private_data	= private_data,
 		.handler_name	= handler_name,
 		.location	= location,
+		.chain_id = tevent_chain_id,
 	};
 
 	DLIST_ADD(ev->fd_events, fde);
@@ -112,6 +113,7 @@ int tevent_common_invoke_fd_handler(struct tevent_fd *fde, uint16_t flags,
 				    bool *removed)
 {
 	struct tevent_context *handler_ev = fde->event_ctx;
+	uint32_t old_id;
 
 	if (removed != NULL) {
 		*removed = false;
@@ -135,7 +137,9 @@ int tevent_common_invoke_fd_handler(struct tevent_fd *fde, uint16_t flags,
 					fde->handler_name,
 					fde->location);
 	}
+	old_id = tevent_set_chain_id(fde->chain_id);
 	fde->handler(handler_ev, fde, flags, fde->private_data);
+	tevent_set_chain_id(old_id);
 	if (fde->wrapper != NULL) {
 		fde->wrapper->ops->after_fd_handler(
 					fde->wrapper->wrap_ev,

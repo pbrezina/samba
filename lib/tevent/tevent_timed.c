@@ -245,6 +245,7 @@ static struct tevent_timer *tevent_common_add_timer_internal(
 		.private_data	= private_data,
 		.handler_name	= handler_name,
 		.location	= location,
+		.chain_id = tevent_chain_id,
 	};
 
 	if (ev->timer_events == NULL) {
@@ -322,6 +323,7 @@ int tevent_common_invoke_timer_handler(struct tevent_timer *te,
 				       bool *removed)
 {
 	struct tevent_context *handler_ev = te->event_ctx;
+	uint32_t old_id;
 
 	if (removed != NULL) {
 		*removed = false;
@@ -367,7 +369,9 @@ int tevent_common_invoke_timer_handler(struct tevent_timer *te,
 					te->handler_name,
 					te->location);
 	}
+	old_id = tevent_set_chain_id(te->chain_id);
 	te->handler(handler_ev, te, current_time, te->private_data);
+	tevent_set_chain_id(old_id);
 	if (te->wrapper != NULL) {
 		te->wrapper->ops->after_timer_handler(
 					te->wrapper->wrap_ev,

@@ -27,6 +27,8 @@
    License along with this library; if not, see <http://www.gnu.org/licenses/>.
 */
 
+extern uint32_t tevent_chain_id;
+
 struct tevent_req {
 	/**
 	 * @brief What to do on completion
@@ -170,6 +172,8 @@ struct tevent_req {
 		 */
 		struct tevent_req_profile *profile;
 	} internal;
+
+	uint32_t chain_id;
 };
 
 struct tevent_req_profile {
@@ -204,6 +208,7 @@ struct tevent_fd {
 	/* this is private for the events_ops implementation */
 	uint64_t additional_flags;
 	void *additional_data;
+	uint32_t chain_id;
 };
 
 struct tevent_timer {
@@ -221,6 +226,7 @@ struct tevent_timer {
 	const char *location;
 	/* this is private for the events_ops implementation */
 	void *additional_data;
+	uint32_t chain_id;
 };
 
 struct tevent_immediate {
@@ -239,6 +245,7 @@ struct tevent_immediate {
 	/* this is private for the events_ops implementation */
 	void (*cancel_fn)(struct tevent_immediate *im);
 	void *additional_data;
+	uint32_t chain_id;
 };
 
 struct tevent_signal {
